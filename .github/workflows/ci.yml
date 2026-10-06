@@ -18,6 +18,19 @@ jobs:
         with:
           compiler: ${{ matrix.compiler }}
           dub: latest
+      - name: Report toolchain versions
+        run: |
+          "$DC" --version
+          dub --version
+      - name: Validate package metadata and dependencies
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          package = json.loads(Path("dub.json").read_text())
+          assert package["name"] == "betacalendars-staticgrid"
+          assert not package.get("dependencies"), "unexpected runtime dependencies"
+          PY
       - name: Unit and exhaustive tests
         run: dub test
       - name: Public API and CTFE checks
@@ -28,8 +41,27 @@ jobs:
           dub build --config=no-gc
           dub build --config=blank
           dub build --config=inspect
+          dub build --config=compile-time --build=release
+      - name: Run examples
+        run: |
+          dub run --config=compile-time
+          dub run --config=no-gc
+          dub run --config=blank
+          dub run --config=inspect -- --year 2027 --month 1 --week-start monday
       - name: Verify BetterC-compatible core
-        run: "$DC" -betterC -o- -I=source source/betacalendars/staticgrid.d
+        run: '"$DC" -betterC -o- -I=source source/betacalendars/staticgrid.d'
+      - name: Audit excluded reference URL
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          needle = "monthly" + "-calendar"
+          matches = [str(path) for path in Path(".").rglob("*")
+                     if path.is_file() and ".git" not in path.parts and "build" not in path.parts
+                     and needle in path.read_text(errors="replace")]
+          if matches:
+              raise SystemExit("Excluded URL fragment found in: " + ", ".join(matches))
+          print("Excluded URL audit passed")
+          PY
       - name: Build DDoc
         run: |
           mkdir -p site/api
