@@ -83,13 +83,17 @@ jobs:
         with:
           compiler: ldc-latest
           dub: latest
-      - name: Assemble documentation site
+      - name: Assemble documentation source
         run: |
           mkdir -p site/api
           cp -R docs/. site/
           "$DC" -D -o- -Dd=site/api -I=source source/betacalendars/staticgrid.d
       - uses: actions/configure-pages@v5
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./site
+          destination: ./_site
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: ./_site
       - uses: actions/deploy-pages@v4
