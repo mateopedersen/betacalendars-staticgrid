@@ -1,0 +1,10 @@
+.dub/
+docs/api/
+build/
+betacalendars-staticgrid
+betacalendars-staticgrid-test-*
+*.o
+*.obj
+*.a
+*.lib
+*.exe

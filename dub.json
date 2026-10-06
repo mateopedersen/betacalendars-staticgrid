@@ -1,0 +1,22 @@
+{
+  "name": "betacalendars-staticgrid",
+  "description": "Compile-time and allocation-free calendar topology, masks, ranges, and fixed-size month grids.",
+  "authors": ["Mateo Pedersen"],
+  "license": "MIT",
+  "copyright": "Copyright © 2026, Mateo Pedersen",
+  "homepage": "https://www.betacalendars.com/",
+  "targetType": "sourceLibrary",
+  "toolchainRequirements": {
+    "frontend": ">=2.100.0"
+  },
+  "configurations": [
+    { "name": "library", "targetType": "sourceLibrary" },
+    { "name": "inspect", "targetType": "executable", "mainSourceFile": "examples/inspect.d" },
+    { "name": "compile-time", "targetType": "executable", "mainSourceFile": "examples/compile_time.d" },
+    { "name": "no-gc", "targetType": "executable", "mainSourceFile": "examples/no_gc.d" },
+    { "name": "blank", "targetType": "executable", "mainSourceFile": "examples/blank_grid.d" },
+    { "name": "public-api-tests", "targetType": "executable", "mainSourceFile": "tests/test_main.d",
+      "sourcePaths": ["source", "tests"] },
+    { "name": "benchmark", "targetType": "executable", "mainSourceFile": "benchmark/benchmark.d" }
+  ]
+}

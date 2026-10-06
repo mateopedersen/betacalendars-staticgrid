@@ -1,0 +1,4 @@
+theme: minima
+title: BetaCalendars StaticGrid
+description: Compile-time and allocation-free Gregorian month topology for D
+markdown: kramdown

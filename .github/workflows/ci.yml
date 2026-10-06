@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [dmd-latest, dmd-2.112.1, ldc-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dlang-community/setup-dlang@v2
+        with:
+          compiler: ${{ matrix.compiler }}
+          dub: latest
+      - name: Unit and exhaustive tests
+        run: dub test
+      - name: Public API and CTFE checks
+        run: dub test --config=public-api-tests
+      - name: Compile examples
+        run: |
+          dub build --config=compile-time
+          dub build --config=no-gc
+          dub build --config=blank
+          dub build --config=inspect
+      - name: Verify BetterC-compatible core
+        run: "$DC" -betterC -o- -I=source source/betacalendars/staticgrid.d
+      - name: Build DDoc
+        run: |
+          mkdir -p site/api
+          "$DC" -D -o- -Dd=site/api -I=source source/betacalendars/staticgrid.d
+
+  docs:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dlang-community/setup-dlang@v2
+        with:
+          compiler: ldc-latest
+          dub: latest
+      - name: Assemble documentation site
+        run: |
+          mkdir -p site/api
+          cp -R docs/. site/
+          "$DC" -D -o- -Dd=site/api -I=source source/betacalendars/staticgrid.d
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
